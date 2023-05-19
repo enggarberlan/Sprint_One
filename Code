@@ -1,0 +1,168 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Threading;
+
+namespace Sprint_One
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+            FillArray();
+            ShowArray();
+        }
+
+            List<string> myList = new List<string>();
+            string currentFileName = "";
+
+            static int max = 24;
+            int[] myArray = new int[max];
+       
+
+
+        #region Utility
+        private void DisplayInteractions()
+        {
+            ListBoxOutput.Items.Clear();
+            foreach (var interactions in myList)
+            {
+                ListBoxOutput.Items.Add(interactions);
+            }
+            
+
+        }
+
+        private void ListBoxOutput_MouseClick(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                ListBoxOutput.SetSelected(ListBoxOutput.SelectedIndex, true);
+                textBox1.Text = myList.ElementAt(ListBoxOutput.SelectedIndex);
+            }
+            catch
+            {
+                return;
+            }
+        }
+
+        private void ButtonSearch_Click(object sender, EventArgs e)
+        {
+            if (myList.BinarySearch(textBox1.Text) >= 0)
+                MessageBox.Show("Data has been found");
+            else
+                MessageBox.Show("Data not found");
+            textBox1.Clear();
+            textBox1.Focus();
+        }
+
+        private void textBox1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            textBox1.Clear();
+        }
+
+        private void textBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        //ADDING FEATURES
+        {
+            if (!string.IsNullOrWhiteSpace(textBox1.Text) && (ValidInteractions(textBox1.Text)))
+            {
+                myList.Add(textBox1.Text);
+                myList.Sort();
+                DisplayInteractions();
+                textBox1.Clear();
+                textBox1.Focus();
+            }
+        }
+
+        #endregion Utility
+
+        #region Neutrino Validation
+        private bool ValidInteractions(string checkThisName)
+        {
+            if (myList.Exists(duplicate => duplicate.Equals(checkThisName)))
+                return false;
+            else
+                return true;
+        }
+        #endregion Neutrino Validation
+
+        #region Edit Button
+        private void ButtonEdit_Click(object sender, EventArgs e)
+        {
+            myList[ListBoxOutput.SelectedIndex] = textBox1.Text;
+            textBox1.Clear();
+            DisplayInteractions();
+
+            
+        }
+
+
+        #endregion Edit Button
+
+        #region Sort Button
+        private void ButtonSort_Click(object sender, EventArgs e)
+        {
+            int temp = 0;
+            for (int outer = 0; outer < max; outer++)
+            {
+                for (int inner = 0; inner < max - 1; inner++)
+                {
+                    if (myArray[inner] > myArray[inner + 1])
+                    {
+                        //Swap routine
+                        temp = myArray[inner + 1];
+                        myArray[inner + 1] = myArray[inner];
+                        myArray[inner] = temp;
+                    }
+                    ShowArray();
+                    Application.DoEvents();
+                    Thread.Sleep(20);
+                    
+                }
+            }
+        }
+        // Method to display array
+        private void ShowArray()
+        {
+            ListBoxOutput.Items.Clear();
+            for (int i = 0; i < max; i++)
+            {
+                ListBoxOutput.Items.Add(myArray[i]);
+            }
+        }
+        //Method to fill Array with random numbers
+        private void FillArray()
+        {
+            //Create a random number
+            Random rand = new Random();
+            for (int i = 0; i < max; i++)
+            {
+                //Random number0..100
+                myArray[i] = rand.Next(10, 99);
+            }
+        }
+
+        #endregion Sort Button
+
+        
+    }
+}
