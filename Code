@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
+using System.Security.Cryptography;
 
 namespace Sprint_One
 {
@@ -18,12 +19,10 @@ namespace Sprint_One
         {
             InitializeComponent();
             FillArray();
-            ShowArray();
+            DisplayInteractions();
         }
 
-            List<string> myList = new List<string>();
-            string currentFileName = "";
-
+            
             static int max = 24;
             int[] myArray = new int[max];
        
@@ -33,7 +32,7 @@ namespace Sprint_One
         private void DisplayInteractions()
         {
             ListBoxOutput.Items.Clear();
-            foreach (var interactions in myList)
+            foreach (var interactions in myArray)
             {
                 ListBoxOutput.Items.Add(interactions);
             }
@@ -43,30 +42,48 @@ namespace Sprint_One
 
         private void ListBoxOutput_MouseClick(object sender, MouseEventArgs e)
         {
-            try
+            if (ListBoxOutput.SelectedItem != null)
             {
-                ListBoxOutput.SetSelected(ListBoxOutput.SelectedIndex, true);
-                textBox1.Text = myList.ElementAt(ListBoxOutput.SelectedIndex);
-            }
-            catch
-            {
-                return;
+                textBox1.Text = ListBoxOutput.SelectedItem.ToString();
             }
         }
 
         private void ButtonSearch_Click(object sender, EventArgs e)
         {
-            if (myList.BinarySearch(textBox1.Text) >= 0)
-                MessageBox.Show("Data has been found");
-            else
-                MessageBox.Show("Data not found");
-            textBox1.Clear();
-            textBox1.Focus();
+            
+            int lowBound = 0;
+            int highBound = max;
+            int target;
+            if (!(Int32.TryParse(textBox1.Text, out target)))
+            {
+                MessageBox.Show("You must enter an integer");
+                return;
+            }
+            while (lowBound <= highBound)
+            {
+                int mid = (lowBound + highBound) / 2;
+                if (myArray[mid] == target)
+                {
+                    MessageBox.Show("Found at index " + mid);
+                    return;
+                }
+                else if (myArray[mid] < target)
+                {
+                    lowBound = mid + 1;
+                }
+                else
+                {
+                    highBound = mid - 1;
+                }
+
+            }
+            MessageBox.Show("Not found. Try again.");
+
         }
 
         private void textBox1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            textBox1.Clear();
+            
         }
 
         private void textBox1_Enter(object sender, EventArgs e)
@@ -83,36 +100,43 @@ namespace Sprint_One
         private void textBox1_TextChanged(object sender, EventArgs e)
         //ADDING FEATURES
         {
-            if (!string.IsNullOrWhiteSpace(textBox1.Text) && (ValidInteractions(textBox1.Text)))
-            {
-                myList.Add(textBox1.Text);
-                myList.Sort();
-                DisplayInteractions();
-                textBox1.Clear();
-                textBox1.Focus();
-            }
+            
         }
 
         #endregion Utility
 
         #region Neutrino Validation
-        private bool ValidInteractions(string checkThisName)
-        {
-            if (myList.Exists(duplicate => duplicate.Equals(checkThisName)))
-                return false;
-            else
-                return true;
-        }
+       
         #endregion Neutrino Validation
 
         #region Edit Button
         private void ButtonEdit_Click(object sender, EventArgs e)
         {
-            myList[ListBoxOutput.SelectedIndex] = textBox1.Text;
-            textBox1.Clear();
-            DisplayInteractions();
+            if (string.IsNullOrWhiteSpace(textBox1.Text))
+            {
+                MessageBox.Show("Please type any value on text box");
+                return;
+            }
 
-            
+            if (ListBoxOutput.SelectedItem != null)
+            {
+                int newValue;
+                if (Int32.TryParse(textBox1.Text, out newValue))
+                {
+                    myArray[ListBoxOutput.SelectedIndex] = newValue;
+                    DisplayInteractions();
+                    textBox1.Clear();
+                    textBox1.Focus();
+                }
+                else
+                {
+                    MessageBox.Show("Invalid input");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select an item from the list.");
+            }
         }
 
 
@@ -121,33 +145,31 @@ namespace Sprint_One
         #region Sort Button
         private void ButtonSort_Click(object sender, EventArgs e)
         {
-            int temp = 0;
-            for (int outer = 0; outer < max; outer++)
+            
+            for (int outer = 0; outer < max - 1; outer++)
             {
                 for (int inner = 0; inner < max - 1; inner++)
                 {
                     if (myArray[inner] > myArray[inner + 1])
                     {
                         //Swap routine
-                        temp = myArray[inner + 1];
-                        myArray[inner + 1] = myArray[inner];
-                        myArray[inner] = temp;
+                        int temp = myArray[inner];
+                        myArray[inner] = myArray[inner + 1];
+                        myArray[inner + 1] = temp;
+
+                        DisplayInteractions();
+                        Application.DoEvents();
+                        Thread.Sleep(20);
                     }
-                    ShowArray();
-                    Application.DoEvents();
-                    Thread.Sleep(20);
+                    
                     
                 }
             }
         }
         // Method to display array
-        private void ShowArray()
+        private void ShowArray(int low, int high)
         {
-            ListBoxOutput.Items.Clear();
-            for (int i = 0; i < max; i++)
-            {
-                ListBoxOutput.Items.Add(myArray[i]);
-            }
+            
         }
         //Method to fill Array with random numbers
         private void FillArray()
@@ -161,8 +183,12 @@ namespace Sprint_One
             }
         }
 
+
         #endregion Sort Button
 
-        
+        private void textBox1_TextChanged_1(object sender, EventArgs e)
+        {
+
+        }
     }
 }
